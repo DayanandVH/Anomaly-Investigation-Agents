@@ -1,0 +1,10 @@
+pandas
+numpy
+scikit-learn
+langchain
+langgraph
+langchain-ollama
+chromadb
+sentence-transformers
+streamlit
+python-dotenv
