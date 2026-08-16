@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment / secrets
+.env
+
+# Data — should not commit the real dataset (large, and shouldn't live in git)
+data/creditcard.csv
+data/*.csv
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
