@@ -9,10 +9,12 @@ Status: Week 1 — baseline detector done. RAG + agent layer coming next.
 ## Project structure
 ```
 anomaly-agent/
+  app.py               # Streamlit demo UI (entry point: streamlit run app.py)
   src/
     data.py            # loads real or synthetic transaction data
     detector.py        # IsolationForest baseline + per-feature deviation reasons
     knowledge_base.py  # RAG: fraud-pattern/business-rule case notes + retrieval (ChromaDB)
+    agent.py           # LangGraph agent: retrieve -> reason -> explain
   data/                 # put creditcard.csv here (see below)
   notebooks/            # exploration
   tests/
@@ -79,9 +81,16 @@ pattern(s) to reason with.
    ```
    You should see flagged rows with their top contributing features.
 
+6. **Run the Streamlit demo**
+   ```bash
+   streamlit run app.py
+   ```
+   Opens in your browser at http://localhost:8501. Pick a backend (Groq or
+   Ollama) in the sidebar, select a flagged row, and click "Investigate".
+
 ## Roadmap
 - [x] Week 1: baseline anomaly detector with per-feature reasons
 - [x] Week 2: RAG knowledge base (case notes / business rules) + retrieval
 - [x] Week 3: LangGraph agent (retrieve → reason → explain → recommend)
-- [ ] Week 4: Streamlit demo UI
+- [x] Week 4: Streamlit demo UI
 - [ ] Week 5: evaluation, polish, deploy
