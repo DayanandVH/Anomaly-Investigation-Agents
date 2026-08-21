@@ -192,7 +192,7 @@ def retrieve(collection: "chromadb.Collection", query: str, top_k: int = 2) -> L
     Args:
         collection: a Chroma collection returned by build_knowledge_base()
         query: natural-language description of the anomaly's shape (see
-               agent.py in Week 3 for how this gets constructed from an AnomalyFlag)
+               agent.py for how this gets constructed from an AnomalyFlag)
         top_k: how many results to return
     """
     results = collection.query(query_texts=[query], n_results=top_k)

@@ -43,18 +43,50 @@ class AgentState(TypedDict):
 
 def describe_anomaly_shape(anomaly: Dict[str, Any]) -> str:
     """Turn a flagged row's structured data into a natural-language query
-    describing its 'shape' (how many features deviate, how strongly, and the
-    transaction amount) — this is what lets the knowledge base, which is
-    built around general patterns, match this specific anomaly WITHOUT ever
-    needing to know what an anonymized feature like 'V9' actually means.
+    describing its 'shape' — this is what lets the knowledge base match this
+    specific anomaly WITHOUT ever needing to know what an anonymized feature
+    like 'V9' actually means.
+
+    Important design note (found via evaluation, see evaluate.py): this
+    deliberately uses QUALITATIVE buckets ("a few features", "strong
+    deviation", "a very small amount") rather than raw numbers. An earlier
+    version embedded raw numbers directly (e.g. "z-score 6.10... amount
+    $1.20"), but generic sentence embeddings don't do numeric reasoning —
+    "$1.20" and "$920.00" look like near-identical token patterns to them.
+    That caused every query to collapse onto the same top retrieval result
+    regardless of the actual anomaly. Converting to qualitative language that
+    matches the knowledge base's own vocabulary fixed it.
     """
     n_features = len(anomaly["top_features"])
     max_z = max(abs(f["z_score"]) for f in anomaly["top_features"])
-    amount = anomaly["raw_row"].get("Amount", "unknown")
-    return (
-        f"{n_features} features deviate with max absolute z-score {max_z:.2f}, "
-        f"transaction amount is ${amount}"
-    )
+    amount = anomaly["raw_row"].get("Amount")
+
+    if n_features <= 2:
+        feature_count_desc = "one or two features"   # matches pattern_single_large_anomaly's own wording
+    elif n_features <= 4:
+        feature_count_desc = "multiple features"      # matches pattern_card_testing's own wording
+    else:
+        feature_count_desc = "many features"           # matches pattern_broad_mild_deviation's own wording
+
+    if max_z >= 3:
+        deviation_desc = "strong deviation"
+    elif max_z >= 1.5:
+        deviation_desc = "mild deviation"
+    else:
+        deviation_desc = "weak deviation"
+
+    try:
+        amt = float(amount)
+        if amt < 5:
+            amount_desc = "a very small transaction amount"
+        elif amt < 100:
+            amount_desc = "a moderate transaction amount"
+        else:
+            amount_desc = "a high transaction amount"
+    except (TypeError, ValueError):
+        amount_desc = "an unknown transaction amount"
+
+    return f"{feature_count_desc} show {deviation_desc}, with {amount_desc}"
 
 
 def build_agent(kb_collection, llm):
@@ -131,7 +163,7 @@ if __name__ == "__main__":
 
     use_offline_kb = "--offline" in sys.argv
 
-    # --- Build the pieces from Weeks 1 and 2 ---
+    # --- Build the pieces from Data Loading and anaomaly detector ---
     df, source = load_data()
     feature_cols = [c for c in df.columns if c != "Class"]
     detector = AnomalyDetector(contamination=0.02).fit(df, feature_cols)

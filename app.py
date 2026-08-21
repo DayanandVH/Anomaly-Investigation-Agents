@@ -4,7 +4,7 @@ Streamlit demo UI for the anomaly-investigation agent.
 Run with:
     streamlit run app.py
 
-This is a thin UI layer over Weeks 1-3 (detector, knowledge base, agent) —
+This is a thin UI layer over detector, knowledge base, agent —
 no new logic lives here, it just wires the pipeline up for interactive use.
 """
 

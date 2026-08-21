@@ -4,7 +4,7 @@ An agent that takes a flagged anomaly from a tabular fraud-detection model,
 retrieves relevant business/case context (RAG), and produces a human-readable
 explanation and recommended action — using LangGraph for orchestration.
 
-Status: Week 1 — baseline detector done. RAG + agent layer coming next.
+Step1 — baseline detector done. RAG + agent layer coming next.
 
 ## Project structure
 ```
@@ -25,7 +25,7 @@ The real dataset's `V1`..`V28` columns are anonymized PCA components with no
 real-world meaning — so the knowledge base doesn't pretend to know what "V9"
 means. Instead it holds general fraud-analytics patterns and business rules
 keyed to the *shape* of an anomaly (how many features deviate, how strongly,
-combined with the transaction amount). The agent (Week 3) builds a natural-
+combined with the transaction amount). The agent builds a natural-
 language description of a flagged row's shape and retrieves the most relevant
 pattern(s) to reason with.
 
@@ -88,9 +88,38 @@ pattern(s) to reason with.
    Opens in your browser at http://localhost:8501. Pick a backend (Groq or
    Ollama) in the sidebar, select a flagged row, and click "Investigate".
 
-## Roadmap
-- [x] Week 1: baseline anomaly detector with per-feature reasons
-- [x] Week 2: RAG knowledge base (case notes / business rules) + retrieval
-- [x] Week 3: LangGraph agent (retrieve → reason → explain → recommend)
-- [x] Week 4: Streamlit demo UI
-- [ ] Week 5: evaluation, polish, deploy
+## Evaluation results
+Run `python src/evaluate.py` to reproduce.
+
+- **Explanation groundedness: 100%** (5/5 flagged rows) — the LLM's explanation
+  correctly references the actual flagged feature names, not hallucinated ones.
+- **Retrieval accuracy:** 100% (3/3) with the offline TF-IDF fallback, but only
+  **67% (2/3)** with the real MiniLM sentence-embedding model on the same
+  3-case eval set.
+
+### Known limitation: MiniLM underperforms TF-IDF on this retrieval task
+Investigated in detail rather than papered over: on short, templated queries
+like "multiple features show strong deviation, with a very small transaction
+amount", the general-purpose MiniLM embedding appears to weight shared
+sentence structure more heavily than the differentiating adjective (e.g.
+"small" vs "high"). Realigning query wording to match the knowledge base's
+exact vocabulary did not change the result, ruling out a simple phrasing fix.
+This is a known characteristic of compact sentence embeddings on short,
+domain-specific text, not a bug — a larger/different embedding model, more
+knowledge base entries, or a hybrid retrieval approach (embedding + keyword)
+would likely close this gap. Left as a documented limitation given project
+scope.
+
+## Known limitations & possible extensions
+- Knowledge base is a small, hand-written set of 8 patterns — a real
+  deployment would need many more, likely sourced from actual analyst notes.
+- No hybrid retrieval (embedding + keyword) — see limitation above.
+- LLM backend requires either a working local Ollama install or a Groq API
+  key; no fully-offline LLM path currently (only retrieval has an offline mode).
+- No conversation memory — each investigation is independent.
+
+- [x] Step 1: baseline anomaly detector with per-feature reasons
+- [x] Step 2: RAG knowledge base (case notes / business rules) + retrieval
+- [x] Step 3: LangGraph agent (retrieve → reason → explain → recommend)
+- [x] Step 4: Streamlit demo UI
+- [ ] Step 5: evaluation, polish, deploy
