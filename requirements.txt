@@ -4,7 +4,7 @@ scikit-learn
 langchain
 langgraph
 langchain-ollama
+langchain-groq
 chromadb
-sentence-transformers
 streamlit
 python-dotenv

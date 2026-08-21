@@ -8,7 +8,7 @@ __pycache__/
 # Environment / secrets
 .env
 
-# Data — should not commit the real dataset (large, and shouldn't live in git)
+# Data — don't commit the real dataset (large, and shouldn't live in git)
 data/creditcard.csv
 data/*.csv
 
@@ -19,3 +19,10 @@ data/*.csv
 
 # Notebook checkpoints
 .ipynb_checkpoints/
+
+# Vector store — regenerated automatically on first run, no need to commit it
+src/chroma_store/
+chroma_store/
+
+# Excluded project files
+agentic-anomaly/

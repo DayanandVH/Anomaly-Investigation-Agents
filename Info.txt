@@ -1,4 +1,0 @@
-data.py — loads the real Kaggle fraud dataset if it's present at data/creditcard.csv, otherwise generates a synthetic dataset with the same shape (transaction-like features + an imbalanced Class column, ~2% anomalies). This lets you develop against something realistic without blocking on the download, and swapping in the real data later is a no-op — nothing else in the pipeline changes.
-
-detector.py — this is the one part of the project that's "just" ML, not the novel bit. It's an IsolationForest (a standard, well-understood anomaly detector) with one deliberate design choice: for every flagged row, it doesn't just say "anomalous" — it returns the top contributing features with their z-scores (how many standard deviations off-normal each one is). That structured AnomalyFlag object is the handoff point to the agent: next week, instead of the agent guessing why something looks weird, it gets fed exact numbers to reason over.
-
