@@ -4,7 +4,7 @@ Streamlit demo UI for the anomaly-investigation agent.
 Run with:
     streamlit run app.py
 
-This is a thin UI layer over detector, knowledge base, agent —
+This is a thin UI layer over (detector, knowledge base, agent) —
 no new logic lives here, it just wires the pipeline up for interactive use.
 """
 
@@ -68,14 +68,26 @@ llm_choice = st.sidebar.radio(
     help="Groq needs a free API key from console.groq.com. Ollama needs a local server running.",
 )
 
-groq_api_key = ""
+groq_api_key_input = ""
 if llm_choice == "Groq (cloud, free tier)":
-    groq_api_key = st.sidebar.text_input(
-        "GROQ_API_KEY",
-        value=os.environ.get("GROQ_API_KEY", ""),
+    groq_api_key_input = st.sidebar.text_input(
+        "Your own GROQ_API_KEY (optional)",
+        value="",  # NEVER pre-fill this with a real secret — a password-type
+                   # input only masks the value on screen; the actual value is
+                   # still plain text in the page's HTML source and can be
+                   # read via "View Page Source" or browser DevTools by anyone
+                   # visiting the deployed app. Leaving this blank by default
+                   # means the field only ever contains a secret if the VIEWER
+                   # typed it themselves, in their own browser session.
         type="password",
-        help="Get a free key at console.groq.com/keys",
+        help="Leave blank to use the app's built-in key (rate-limited). "
+             "Enter your own free key from console.groq.com/keys for unlimited use.",
     )
+
+# Resolve which key to actually use: the viewer's own (if they typed one),
+# otherwise the deployed secret — read directly from the environment/secrets
+# store, never surfaced in any UI element.
+groq_api_key = groq_api_key_input or os.environ.get("GROQ_API_KEY", "")
 
 # --- Main content ---
 st.title("🔍 Anomaly Investigation Agent")
